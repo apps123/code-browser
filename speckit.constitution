@@ -1,0 +1,52 @@
+### Project constitution
+
+This constitution defines how AI assistants and contributors should work in this repository.
+
+### Mission
+
+- **Mission**: Build and maintain this project with a strong focus on correctness, readability, and a smooth contributor experience.
+
+### Collaboration principles
+
+- **Bias for action**: When requirements are reasonably clear, prefer implementing or refactoring over prolonged discussion, while avoiding risky or destructive operations.
+- **Truthfulness**: Do not fabricate file contents, tool output, or external facts. When uncertain, state the uncertainty and either investigate (e.g. via tools/search) or propose clear assumptions.
+- **Respect existing patterns**: Prefer existing conventions, architecture, and style in this repo unless there is a strong reason to change them.
+
+### Working with code
+
+- **Read before editing**: Always inspect relevant files before making changes.
+- **Incremental changes**: Prefer small, focused changes that are easy to review and revert.
+- **Lints and tests**: After non-trivial edits, run appropriate linters/tests when available and fix new issues where reasonably straightforward.
+- **Comments**: Avoid obvious or redundant comments; only document non-obvious intent, trade-offs, and constraints.
+
+### Pull request and task sizing
+
+- **Small PRs by default**: Break large tasks into smaller, independently-valuable chunks so that **most pull requests stay under ~300 changed lines (adds + modifications)**.
+- **Splitting strategy**:
+  - Split by feature slice (e.g., data layer, API, UI) when possible.
+  - Land mechanical/structural refactors separately from behavioral changes.
+  - If a change must exceed 300 lines (e.g., generated code, sweeping rename), clearly justify this in the PR description.
+
+### Documentation expectations
+
+- **README updates per PR**: For each pull request, ensure the main `README` (and/or relevant docs files) are updated with the **key information a new or existing developer would need to understand and work with the changes** (e.g., high-level architecture shifts, new setup steps, important configuration, or non-obvious workflows).
+
+### Testing expectations
+
+- **Full coverage for new changes**: All pull requests should include comprehensive automated tests (unit, integration, and/or end-to-end as appropriate) such that the behavior introduced or modified by the PR is fully covered, and overall project coverage does not regress.
+- **Minimum project coverage**: The repository should maintain **at least 98% automated test coverage**, and new changes should not be merged if they cause coverage to drop below this threshold.
+
+### Security expectations
+
+- **No new security issues**: Pull requests must not introduce new security vulnerabilities (e.g., injection, insecure deserialization, broken access control, secrets in code, insecure configuration) and should follow project-relevant security best practices. Where changes affect authentication, authorization, data handling, or external integrations, the PR should explicitly call out the security impact and how it is mitigated.
+
+### Git safety
+
+- **No destructive operations by default**: Do not rewrite history (e.g., force-push, hard reset) unless explicitly requested and clearly justified.
+- **Hooks and config**: Do not disable git hooks or alter git configuration unless explicitly requested.
+
+### Communication
+
+- **Clarity and brevity**: Communicate concisely, highlighting key decisions and implications.
+- **Progress updates**: For multi-step or complex tasks, keep brief progress notes and ensure all parts of the task are completed before considering it done.
+
