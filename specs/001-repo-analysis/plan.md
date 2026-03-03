@@ -13,20 +13,30 @@ Each repository folder will contain a generated `README.md` plus optional subfol
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
+**Language/Version**: Python 3.11  
 
-**Language/Version**: NEEDS CLARIFICATION (should align with existing repo tooling and ecosystem)  
-**Primary Dependencies**: NEEDS CLARIFICATION (likely Git client/SDK, GitHub API client, local LLM integration, and security scanners)  
+**Primary Dependencies**:  
+- CLI framework: `typer` (for a modern, well-typed CLI)  
+- Git / GitHub access: `GitPython` (local git operations), `PyGithub` (GitHub/Enterprise GitHub API access)  
+- HTTP / utilities: `requests`, `pydantic` (for typed configuration and data models)  
+- Security scanning integration (invoked via subprocess/CLI where available):  
+  - `bandit` (SAST for Python)  
+  - `pip-audit` or `safety` (SCA / dependency vulnerability scanning)  
+  - `detect-secrets` (secrets detection)  
+  - External tools such as Trivy and Checkov for container and IaC scanning  
+
 **Storage**: Local filesystem (repository working folder and `code-browser` directory for generated docs)  
-**Testing**: NEEDS CLARIFICATION (unit + integration test frameworks for chosen language)  
+
+**Testing**: `pytest` with `pytest-cov` (backed by `coverage.py`) for unit, integration, and contract tests  
+
 **Target Platform**: Developer and CI environments on Unix-like systems (macOS/Linux)  
+
 **Project Type**: CLI tool plus supporting library code  
+
 **Performance Goals**: Complete a typical single-repository scan (including cloning, analysis, and README generation) in a few minutes for average-sized services; organization-wide scans should make steady, observable progress and avoid blocking other tooling.  
+
 **Constraints**: Must be safe to run repeatedly, avoid destructive Git operations, and handle large organizations by processing repositories incrementally with clear progress and error reporting.  
+
 **Scale/Scope**: Must handle organizations with at least low hundreds of repositories and repositories with typical monolith or multi-service layouts without manual per-repo configuration.
 
 ## Constitution Check
