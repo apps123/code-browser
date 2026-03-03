@@ -1,0 +1,43 @@
+MIT License
+
+Copyright (c) 2026 opensoftware
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+ADDITIONAL NOTICE:
+
+By using this Software, you acknowledge and agree that the author and any
+current, former, or future employers or companies the author works for SHALL
+NOT be liable for any data loss, data corruption, data exfiltration, security
+compromise, or any other damage or loss (including indirect, incidental, or
+consequential damages) arising out of or in connection with your use of the
+Software.
+
+It is the sole responsibility of you, your organization, and any operators of
+this Software to:
+
+- Evaluate whether and how to use the Software in your environment(s).
+- Apply appropriate security controls, access restrictions, monitoring, and
+  backups.
+- Ensure that repositories, credentials, and infrastructure used with the
+  Software are handled in a safe and compliant manner.
+
+If you are not willing to accept this responsibility, you must not use the
+Software.
+
