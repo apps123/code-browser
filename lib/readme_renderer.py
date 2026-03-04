@@ -54,8 +54,19 @@ def render_readme(
     lines.append("")
     lines.append("## Dependencies")
     lines.append("")
-    lines.append("- Software Dependencies: Not available")
-    lines.append("- System Dependencies: Not available")
+    if analysis.software_dependencies:
+        lines.append("- Software Dependencies:")
+        for dep in analysis.software_dependencies:
+            lines.append(f"  - {dep}")
+    else:
+        lines.append("- Software Dependencies: Not available")
+
+    if analysis.system_dependencies:
+        lines.append("- System Dependencies:")
+        for dep in analysis.system_dependencies:
+            lines.append(f"  - {dep}")
+    else:
+        lines.append("- System Dependencies: Not available")
     lines.append("")
     lines.append("## Contribution")
     lines.append("")
