@@ -24,6 +24,7 @@ class RepoAnalysis:
     closed_issues: Optional[int]
     ai_tools: List[str]
     test_count: Optional[int]
+    license_type: Optional[str] = None
 
 
 class RepoAnalyzer:
@@ -57,6 +58,7 @@ class RepoAnalyzer:
         closed_issues: Optional[int] = None
         ai_tools: List[str] = []  # could be inferred from config files in future
         test_count = self._infer_test_count(local_path)
+        license_type = self._infer_license_type(local_path)
 
         # Simple heuristic for AI readiness based on tests and documentation presence.
         if test_count and test_count > 0 and has_readme:
@@ -65,6 +67,8 @@ class RepoAnalyzer:
             summary.ai_readiness = "Partial"
         else:
             summary.ai_readiness = "No"
+
+        summary.license_type = license_type
 
         return RepoAnalysis(
             summary=summary,
@@ -78,6 +82,7 @@ class RepoAnalyzer:
             closed_issues=closed_issues,
             ai_tools=ai_tools,
             test_count=test_count,
+            license_type=license_type,
         )
 
     def _infer_contributors(self, local_path: Path) -> List[str]:
@@ -131,4 +136,54 @@ class RepoAnalyzer:
             if path.is_file():
                 count += 1
         return count or None
+
+    def _infer_license_type(self, local_path: Path) -> Optional[str]:
+        """
+        Best-effort detection of the repository license type based on common
+        license files in the repository root.
+        """
+        candidates = [
+            "LICENSE",
+            "LICENSE.txt",
+            "LICENSE.md",
+            "COPYING",
+            "COPYING.txt",
+            "COPYING.md",
+        ]
+
+        license_file: Optional[Path] = None
+        for name in candidates:
+            path = local_path / name
+            if path.exists():
+                license_file = path
+                break
+
+        if not license_file:
+            return None
+
+        try:
+            text = license_file.read_text(encoding="utf-8", errors="ignore")
+        except Exception:
+            return None
+
+        lowered = text.lower()
+
+        if "mit license" in lowered:
+            return "MIT"
+        if "apache license" in lowered:
+            if "version 2.0" in lowered:
+                return "Apache-2.0"
+            return "Apache"
+        if "gnu general public license" in lowered:
+            if "lesser general public license" in lowered:
+                return "LGPL"
+            if "affero general public license" in lowered:
+                return "AGPL"
+            return "GPL"
+        if "bsd license" in lowered or "redistribution and use in source and binary forms" in lowered:
+            return "BSD"
+        if "mozilla public license" in lowered:
+            return "MPL"
+
+        return "Custom / Unknown"
 

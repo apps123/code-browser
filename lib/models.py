@@ -13,6 +13,7 @@ class RepositorySummary:
     scanned_at: datetime
     total_security_issues: int = 0
     ai_readiness: Optional[str] = None  # "Yes", "No", "Partial"
+    license_type: Optional[str] = None
 
 
 @dataclass

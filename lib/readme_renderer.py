@@ -46,7 +46,8 @@ def render_readme(
     )
     lines.append(f"- AI readiness: {analysis.summary.ai_readiness or 'Not available'}")
     lines.append(f"- AI tool support: {', '.join(analysis.ai_tools) or 'Not available'}")
-    lines.append(f"- License type: {'Not available'}")
+    license_type = analysis.summary.license_type or analysis.license_type or "Not available"
+    lines.append(f"- License type: {license_type}")
     lines.append(
         f"- Number of tests available: {analysis.test_count if analysis.test_count is not None else 'Not available'}"
     )

@@ -117,6 +117,7 @@
 - [ ] T033 [US3] Implement README renderer that assembles all metrics, summaries, and diagrams into `code-browser/<repo-name>/README.md` in `lib/readme_renderer.py`
 - [ ] T034 [US3] Ensure missing data (e.g., no issues, no tests) is represented as “Not available” rather than causing failures in `lib/readme_renderer.py`
 - [ ] T035 [US3] Design and document behavior for large organizations and long-running scans (e.g., progress visibility, partial completion) in `specs/001-repo-analysis/quickstart.md`
+- [ ] T047 [US3] Implement license detection from repository root license files and surface it in README summaries in `lib/repo_analyzer.py`, `lib/models.py`, and `lib/readme_renderer.py`
 
 **Checkpoint**: Generated READMEs provide a comprehensive, human-readable summary of repository health and architecture.
 
