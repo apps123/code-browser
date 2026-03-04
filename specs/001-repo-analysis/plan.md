@@ -43,7 +43,7 @@ Each repository folder will contain a generated `README.md` plus optional subfol
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- Constitution file not found at `.specify/memory/constitution.md`; applying default gates:
+- Constitution file found at `.specify/memory/constitution.md`; applying default gates:
   - Keep the design as a single CLI-oriented tool within this repository.
   - Prefer simple, observable flows for cloning, analysis, and README generation.
   - Avoid unnecessary technology proliferation; reuse existing project tooling where practical.

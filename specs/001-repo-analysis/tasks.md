@@ -40,12 +40,12 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T007 Implement Git and GitHub client abstractions for cloning and repository metadata access in `lib/git_providers.py`
-- [ ] T008 Implement configuration module to capture CLI options (org URL/ID, repo URL/ID, working folder, AI provider choice) and to select among supported local LLM providers in `lib/config.py`
-- [ ] T009 Implement local AI assistant integration abstraction (e.g., Claude/Cursor/Copilot adapters) in `lib/ai_summarizer.py` honoring the configured provider choice
-- [ ] T010 Implement security scanner orchestration abstraction for SAST, SCA, secrets, DAST, and IaC scanning in `lib/security_scanner.py`
-- [ ] T011 Implement core data structures for repository analysis results, including security issues and AI readiness, in `lib/models.py`
-- [ ] T012 [P] Create top-level CLI entrypoint that wires arguments to configuration and orchestration in `cli/repo_analysis_cli.py`
+- [ ] T007 Implement Git and GitHub client abstractions for cloning and repository metadata access in `lib/git_providers.py` (covers FR-001, FR-002, FR-004, FR-017)
+- [ ] T008 Implement configuration module to capture CLI options (org URL/ID, repo URL/ID, working folder, AI provider choice) and to select among supported local LLM providers in `lib/config.py` (covers FR-003, FR-018, FR-019, FR-021)
+- [ ] T009 Implement local AI assistant integration abstraction (e.g., Claude/Cursor/Copilot adapters) in `lib/ai_summarizer.py` honoring the configured provider choice (covers FR-018, FR-019)
+- [ ] T010 Implement security scanner orchestration abstraction for SAST, SCA, secrets, DAST, and IaC scanning in `lib/security_scanner.py` (covers FR-006, FR-020) and define pluggable adapters for at least one tool in each category, using the concrete tools enumerated in the security tooling section of `specs/001-repo-analysis/plan.md`
+- [ ] T011 Implement core data structures for repository analysis results, including security issues and AI readiness, in `lib/models.py` (supports FR-004–FR-007, FR-011–FR-014)
+- [ ] T012 [P] Create top-level CLI entrypoint that wires arguments to configuration and orchestration in `cli/repo_analysis_cli.py` (covers FR-001–FR-003, FR-017, FR-021)
 - [ ] T013 [P] Set up base unit test layout for core modules in `tests/unit/` and ensure test runner works
 
 **Checkpoint**: Foundation ready – user story implementation can now begin in parallel.
@@ -65,12 +65,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T016 [US1] Implement organization-scope repository discovery and selection logic in `lib/org_discovery.py`
-- [ ] T017 [US1] Implement orchestration to clone/update all organization repositories from `main` into a working folder in `lib/org_clone_orchestrator.py`
-- [ ] T018 [US1] Implement per-repository folder creation under `code-browser/` with stable naming in `lib/repo_folder_manager.py`
-- [ ] T019 [US1] Implement top-level organization scan command and flags in `cli/repo_analysis_cli.py`
-- [ ] T020 [US1] Implement progress reporting and error aggregation for organization scans in `lib/progress_reporting.py`
-- [ ] T021 [US1] Ensure idempotent behavior when re-running an organization scan (update instead of duplicate) in `lib/org_clone_orchestrator.py`
+- [ ] T016 [US1] Implement organization-scope repository discovery and selection logic in `lib/org_discovery.py` (covers FR-001, FR-003)
+- [ ] T017 [US1] Implement orchestration to clone/update all organization repositories from `main` into a working folder in `lib/org_clone_orchestrator.py` (covers FR-001, FR-004, FR-016, contributes to SC-001)
+- [ ] T018 [US1] Implement per-repository folder creation under `code-browser/` with stable naming in `lib/repo_folder_manager.py` (covers FR-004, FR-015)
+- [ ] T019 [US1] Implement top-level organization scan command and flags in `cli/repo_analysis_cli.py` (covers FR-001, FR-003, FR-021)
+- [ ] T020 [US1] Implement progress reporting and error aggregation for organization scans in `lib/progress_reporting.py` (supports FR-017, SC-001)
+- [ ] T021 [US1] Ensure idempotent behavior when re-running an organization scan (update instead of duplicate) in `lib/org_clone_orchestrator.py` (covers FR-016)
 
 **Checkpoint**: Organization-level scanning produces folders and base READMEs for all accessible repositories under `code-browser/`.
 
@@ -89,9 +89,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T024 [P] [US2] Implement repository-targeted cloning/updating logic shared between org and single-repo flows in `lib/repo_clone.py`
-- [ ] T025 [US2] Implement single-repo scan command and flags in `cli/repo_analysis_cli.py`
-- [ ] T026 [US2] Ensure single-repo scans correctly reuse and update existing `code-browser/` folders and READMEs in `lib/repo_folder_manager.py`
+- [ ] T024 [P] [US2] Implement repository-targeted cloning/updating logic shared between org and single-repo flows in `lib/repo_clone.py` (covers FR-002, FR-004, contributes to SC-002)
+- [ ] T025 [US2] Implement single-repo scan command and flags in `cli/repo_analysis_cli.py` (covers FR-002, FR-003, FR-021)
+- [ ] T026 [US2] Ensure single-repo scans correctly reuse and update existing `code-browser/` folders and READMEs in `lib/repo_folder_manager.py` (covers FR-002, FR-004, FR-016, contributes to SC-002)
 
 **Checkpoint**: Single-repo scanning is independently usable and does not affect unrelated repositories.
 
@@ -154,13 +154,13 @@
 
 **Purpose**: Improvements that affect multiple user stories.
 
-- [ ] T040 [P] Add CLI help, usage examples, and error messages polish in `cli/repo_analysis_cli.py`
-- [ ] T041 Refine logging, progress reporting, and failure diagnostics across modules in `lib/`
-- [ ] T042 [P] Add additional unit tests for AI summarization edge cases and error handling in `tests/unit/test_ai_summarizer.py`
-- [ ] T043 [P] Add additional unit tests for security scanner orchestration and mapping in `tests/unit/test_security_scanner.py`
-- [ ] T044 Add tasks or documentation updates to ensure success criteria (SC-001–SC-006) are explicitly considered in test design and quickstart flows in `specs/001-repo-analysis/quickstart.md`
-- [ ] T045 Update feature documentation and examples in `specs/001-repo-analysis/quickstart.md`
-- [ ] T046 Run end-to-end validation of quickstart flows described in `specs/001-repo-analysis/quickstart.md`
+- [ ] T040 [P] Add CLI help, usage examples, and error messages polish in `cli/repo_analysis_cli.py` (supports FR-003, FR-017, FR-021)
+- [ ] T041 Refine logging, progress reporting, and failure diagnostics across modules in `lib/` (supports FR-017, SC-001–SC-002)
+- [ ] T042 [P] Add additional unit tests for AI summarization edge cases and error handling in `tests/unit/test_ai_summarizer.py` (supports FR-018–FR-019, SC-003–SC-005)
+- [ ] T043 [P] Add additional unit tests for security scanner orchestration and mapping in `tests/unit/test_security_scanner.py` (supports FR-006, FR-020, SC-004–SC-005) covering at minimum one happy-path and one failure-path scenario for each configured SAST, SCA, secrets, DAST, and IaC tool adapter
+- [ ] T044 Add tasks or documentation updates to ensure success criteria (SC-001–SC-006) are explicitly considered in test design and quickstart flows in `specs/001-repo-analysis/quickstart.md` (covers SC-001–SC-006)
+- [ ] T045 Update feature documentation and examples in `specs/001-repo-analysis/quickstart.md` (supports FR-001–FR-003, FR-017, SC-001–SC-006)
+- [ ] T046 Run end-to-end validation of quickstart flows described in `specs/001-repo-analysis/quickstart.md` (validates FR-001–FR-017, SC-001–SC-006)
 
 ---
 
