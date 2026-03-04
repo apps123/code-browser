@@ -2,7 +2,7 @@
 
 **Feature Branch**: `001-repo-analysis`  
 **Created**: 2026-03-02  
-**Status**: Draft  
+**Status**: In review  
 **Input**: User description: "The software program should clone one or many GitHub repositories and generate per-repository folders under code-browser, each with a structured README and optional subpages summarizing repository health, architecture, features, documentation, and tests."
 
 ## Clarifications
@@ -151,12 +151,14 @@ A documentation owner or platform engineer wants to extend or refine the automat
 
 ### Measurable Outcomes
 
-- **SC-001**: For organizations with up to a moderate number of repositories (for example, 100), at least 95% of accessible repositories complete scanning successfully in a single run, producing a corresponding folder and README under `code-browser`.
-- **SC-002**: For a single-repository scan, users can obtain a generated or refreshed README and folder under `code-browser` in a time that feels responsive for typical repository sizes (for example, within a few minutes for an average-sized service).
+- **SC-001**: For organizations with up to **100** repositories, at least **95%** of accessible repositories complete scanning successfully in a single run, producing a corresponding folder and README under `code-browser` within **30 minutes** on a typical CI or developer workstation.
+- **SC-002**: For a single-repository scan on an average-sized service (for example, up to **3000 source files** and **1 GB** of repository data), users can obtain a generated or refreshed README and folder under `code-browser` within **5 minutes** on a typical CI or developer workstation.
 - **SC-003**: In user reviews, at least 80% of technical stakeholders report that the generated README provides enough information to understand the repository’s purpose, tech stack, architecture, and test posture without needing to open the code immediately.
 - **SC-004**: At least 90% of generated READMEs include all required sections (Summary, Dependencies, Contribution, Architecture, Code Organization, Overall Code Flow, Features, Code Documentation, Tests) populated with meaningful content or clearly labeled as “Not available” where data cannot be determined.
 - **SC-005**: For repositories with recognizable test suites, the reported number of tests and code coverage percentage is within an acceptable variance (for example, ±10%) when compared with manually derived values.
-- **SC-006**: After adopting this tool, teams report a measurable reduction in time spent manually surveying repositories for planning or onboarding purposes (for example, a 30% reduction in time to gather repository insights for a portfolio review).
+- **SC-006**: After adopting this tool, teams report at least a **30% reduction** in median time spent manually surveying repositories for planning or onboarding purposes (measured by comparing the average time to prepare a portfolio review or onboarding summary for a set of repositories before and after introducing the tool).
+
+For the purposes of SC‑001 and SC‑002, a “typical CI or developer workstation” is assumed to be a machine with at least **4 vCPUs**, **8 GB RAM**, and **20 GB** of free disk space available for cloning and analysis work.
 
 ## Assumptions
 
