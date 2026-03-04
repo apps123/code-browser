@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Set
@@ -25,6 +25,10 @@ class RepoAnalysis:
     ai_tools: List[str]
     test_count: Optional[int]
     license_type: Optional[str] = None
+    # Detected dependencies (e.g., "package==1.2.3" or "group:artifact:version")
+    software_dependencies: List[str] = field(default_factory=list)
+    # Placeholder for future detection of databases, brokers, external systems, etc.
+    system_dependencies: List[str] = field(default_factory=list)
 
 
 class RepoAnalyzer:
@@ -59,6 +63,8 @@ class RepoAnalyzer:
         ai_tools: List[str] = []  # could be inferred from config files in future
         test_count = self._infer_test_count(local_path)
         license_type = self._infer_license_type(local_path)
+        software_dependencies = self._infer_software_dependencies(local_path)
+        system_dependencies = self._infer_system_dependencies(local_path, software_dependencies)
 
         # Simple heuristic for AI readiness based on tests and documentation presence.
         if test_count and test_count > 0 and has_readme:
@@ -83,6 +89,8 @@ class RepoAnalyzer:
             ai_tools=ai_tools,
             test_count=test_count,
             license_type=license_type,
+            software_dependencies=software_dependencies,
+            system_dependencies=system_dependencies,
         )
 
     def _infer_contributors(self, local_path: Path) -> List[str]:
@@ -186,4 +194,293 @@ class RepoAnalyzer:
             return "MPL"
 
         return "Custom / Unknown"
+
+    def _infer_software_dependencies(self, local_path: Path) -> List[str]:
+        """
+        Aggregate software dependencies detected from language-specific manifests.
+        """
+        deps: Set[str] = set()
+        deps.update(self._infer_python_dependencies(local_path))
+        deps.update(self._infer_java_dependencies(local_path))
+        deps.update(self._infer_go_dependencies(local_path))
+        return sorted(deps)
+
+    def _infer_system_dependencies(self, local_path: Path, software_dependencies: List[str]) -> List[str]:
+        """
+        Infer high-level system requirements and external infrastructure from
+        project structure and declared dependencies.
+
+        This intentionally provides approximate, human-readable guidance rather
+        than a complete environment specification.
+        """
+        items: List[str] = []
+
+        # Baseline environment assumptions – most modern repos can run on these.
+        items.append("Operating systems: Linux, macOS, Windows (x86_64)")
+        items.append("CPU: 2+ cores recommended for comfortable usage")
+        items.append("Memory: 2+ GB RAM recommended (more for large repositories)")
+        items.append("Disk: At least 1 GB free for repository clone and tooling")
+
+        # Network requirements based on common Git hosting and HTTP usage.
+        items.append(
+            "Network: Outbound HTTPS access to Git hosting (e.g., GitHub or enterprise Git) and any remote APIs used by the code"
+        )
+
+        # Detect databases, caches, messaging systems, etc. from dependencies.
+        infra: List[str] = []
+        lower_deps = [d.lower() for d in software_dependencies]
+
+        def _add_unique(label: str) -> None:
+            if label not in infra:
+                infra.append(label)
+
+        # Python DB drivers / ORMs
+        for dep in lower_deps:
+            if "psycopg2" in dep or "asyncpg" in dep or "pg8000" in dep:
+                _add_unique("Database: PostgreSQL")
+            if "mysql" in dep and "mysqlclient" in dep or "pymysql" in dep:
+                _add_unique("Database: MySQL / MariaDB")
+            if "sqlserver" in dep or "pyodbc" in dep:
+                _add_unique("Database: SQL Server (via ODBC)")
+            if "pymongo" in dep or "mongoengine" in dep:
+                _add_unique("Database: MongoDB")
+            if "redis" in dep:
+                _add_unique("Cache / Key-Value store: Redis")
+            if "kafka" in dep:
+                _add_unique("Messaging: Apache Kafka")
+            if "rabbitmq" in dep or "pika" in dep:
+                _add_unique("Messaging: RabbitMQ")
+            if "celery" in dep:
+                _add_unique("Background jobs: Celery (requires broker such as Redis or RabbitMQ)")
+            if "boto3" in dep:
+                _add_unique("Cloud: AWS services (via boto3)")
+
+        # Java ecosystem hints
+        for dep in lower_deps:
+            if "spring-boot-starter-data-jpa" in dep:
+                _add_unique("Database: Relational DB (via JPA/Hibernate)")
+            if "spring-boot-starter-data-mongodb" in dep:
+                _add_unique("Database: MongoDB")
+            if "spring-boot-starter-data-redis" in dep:
+                _add_unique("Cache / Key-Value store: Redis")
+            if "spring-kafka" in dep:
+                _add_unique("Messaging: Apache Kafka")
+            if "spring-boot-starter-amqp" in dep:
+                _add_unique("Messaging: AMQP (e.g., RabbitMQ)")
+
+        # Go ecosystem hints
+        for dep in lower_deps:
+            if "github.com/lib/pq" in dep:
+                _add_unique("Database: PostgreSQL")
+            if "go-sql-driver/mysql" in dep:
+                _add_unique("Database: MySQL / MariaDB")
+            if "mongo-go-driver" in dep or "go.mongodb.org/mongo-driver" in dep:
+                _add_unique("Database: MongoDB")
+            if "github.com/redis" in dep or "go-redis" in dep:
+                _add_unique("Cache / Key-Value store: Redis")
+            if "segmentio/kafka-go" in dep:
+                _add_unique("Messaging: Apache Kafka")
+
+        # Very light-weight config/manifest scanning for infra keywords.
+        config_dirs = ["config", "deploy", "k8s", ".github", ".config"]
+        config_exts = {".yml", ".yaml", ".json", ".tf"}
+        keywords = {
+            "postgres": "Database: PostgreSQL",
+            "mysql": "Database: MySQL / MariaDB",
+            "mariadb": "Database: MySQL / MariaDB",
+            "mongodb": "Database: MongoDB",
+            "redis": "Cache / Key-Value store: Redis",
+            "kafka": "Messaging: Apache Kafka",
+            "rabbitmq": "Messaging: RabbitMQ",
+            "sqs": "Messaging: AWS SQS",
+            "sns": "Messaging: AWS SNS",
+            "dynamodb": "Database: AWS DynamoDB",
+            "elasticsearch": "Search: Elasticsearch / OpenSearch",
+            "opensearch": "Search: OpenSearch",
+            "memcached": "Cache: Memcached",
+        }
+
+        try:
+            for path in local_path.rglob("*"):
+                if not path.is_file():
+                    continue
+                if path.suffix in config_exts or any(part in config_dirs for part in path.parts):
+                    try:
+                        text = path.read_text(encoding="utf-8", errors="ignore").lower()
+                    except Exception:
+                        continue
+                    for token, label in keywords.items():
+                        if token in text:
+                            _add_unique(label)
+        except Exception:
+            # Best-effort only; ignore scanning issues.
+            pass
+
+        items.extend(infra)
+        return items
+
+    def _infer_python_dependencies(self, local_path: Path) -> List[str]:
+        deps: List[str] = []
+        # requirements-style files
+        for name in ("requirements.txt", "requirements-dev.txt"):
+            path = local_path / name
+            if path.exists():
+                try:
+                    for line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
+                        line = line.strip()
+                        # Skip comments, includes, and option lines
+                        if not line or line.startswith("#") or line.startswith("-"):
+                            continue
+                        deps.append(line)
+                except Exception:
+                    continue
+
+        # pyproject.toml (PEP 621 / Poetry-style) – only use structured dependency fields
+        pyproject = local_path / "pyproject.toml"
+        if pyproject.exists():
+            try:
+                text = pyproject.read_text(encoding="utf-8", errors="ignore")
+                toml_module = None
+                try:
+                    import tomllib as toml_module  # type: ignore[attr-defined]
+                except Exception:
+                    try:
+                        import tomli as toml_module  # type: ignore[import-not-found]
+                    except Exception:
+                        toml_module = None
+
+                if toml_module is not None:
+                    data = toml_module.loads(text)
+                    project = data.get("project", {}) or {}
+
+                    # PEP 621 dependencies list
+                    for entry in project.get("dependencies", []) or []:
+                        if isinstance(entry, str) and entry.strip():
+                            deps.append(entry.strip())
+
+                    # Optional dependencies (e.g., dev extras)
+                    opt = project.get("optional-dependencies", {}) or {}
+                    if isinstance(opt, dict):
+                        for extra_list in opt.values():
+                            for entry in extra_list or []:
+                                if isinstance(entry, str) and entry.strip():
+                                    deps.append(entry.strip())
+
+                    # Poetry-style [tool.poetry.dependencies]
+                    tool = data.get("tool", {}) or {}
+                    poetry = tool.get("poetry", {}) or {}
+                    poetry_deps = poetry.get("dependencies", {}) or {}
+                    if isinstance(poetry_deps, dict):
+                        for name, spec in poetry_deps.items():
+                            # Skip interpreter constraint
+                            if name.lower() == "python":
+                                continue
+                            if isinstance(spec, str) and spec.strip():
+                                deps.append(f"{name} {spec.strip()}")
+                            elif isinstance(spec, dict):
+                                version = spec.get("version")
+                                if isinstance(version, str) and version.strip():
+                                    deps.append(f"{name} {version.strip()}")
+            except Exception:
+                # Fall back silently if TOML parsing fails
+                pass
+
+        return deps
+
+    def _infer_java_dependencies(self, local_path: Path) -> List[str]:
+        deps: List[str] = []
+
+        # Maven: pom.xml
+        pom = local_path / "pom.xml"
+        if pom.exists():
+            try:
+                import xml.etree.ElementTree as ET
+
+                tree = ET.parse(str(pom))
+                root = tree.getroot()
+                # Handle namespaces by stripping them
+                for dep in root.iter():
+                    tag = dep.tag.split("}")[-1]
+                    if tag != "dependency":
+                        continue
+                    group_id = None
+                    artifact_id = None
+                    version = None
+                    for child in dep:
+                        ctag = child.tag.split("}")[-1]
+                        text = (child.text or "").strip()
+                        if ctag == "groupId":
+                            group_id = text
+                        elif ctag == "artifactId":
+                            artifact_id = text
+                        elif ctag == "version":
+                            version = text
+                    if group_id and artifact_id:
+                        if version:
+                            deps.append(f"{group_id}:{artifact_id}:{version}")
+                        else:
+                            deps.append(f"{group_id}:{artifact_id}")
+            except Exception:
+                pass
+
+        # Gradle: build.gradle / build.gradle.kts (very lightweight heuristic)
+        for name in ("build.gradle", "build.gradle.kts"):
+            gradle = local_path / name
+            if not gradle.exists():
+                continue
+            try:
+                for raw in gradle.read_text(encoding="utf-8", errors="ignore").splitlines():
+                    line = raw.strip()
+                    if not line or line.startswith("//"):
+                        continue
+                    if any(line.startswith(prefix) for prefix in ("implementation", "api", "compileOnly", "runtimeOnly")):
+                        # Look for "group:artifact:version" inside quotes
+                        quote = '"' if '"' in line else "'"
+                        if quote in line:
+                            try:
+                                first = line.index(quote) + 1
+                                second = line.index(quote, first)
+                                coord = line[first:second]
+                                if coord:
+                                    deps.append(coord)
+                            except ValueError:
+                                continue
+            except Exception:
+                continue
+
+        return deps
+
+    def _infer_go_dependencies(self, local_path: Path) -> List[str]:
+        deps: List[str] = []
+        gomod = local_path / "go.mod"
+        if not gomod.exists():
+            return deps
+
+        try:
+            in_block = False
+            for raw in gomod.read_text(encoding="utf-8", errors="ignore").splitlines():
+                line = raw.strip()
+                if not line or line.startswith("//"):
+                    continue
+                if line.startswith("require ("):
+                    in_block = True
+                    continue
+                if in_block and line.startswith(")"):
+                    in_block = False
+                    continue
+                if line.startswith("require "):
+                    # Single-line require
+                    _, rest = line.split("require", 1)
+                    parts = rest.strip().split()
+                    if len(parts) >= 2:
+                        deps.append(f"{parts[0]} {parts[1]}")
+                    continue
+                if in_block:
+                    parts = line.split()
+                    if len(parts) >= 2:
+                        deps.append(f"{parts[0]} {parts[1]}")
+        except Exception:
+            return []
+
+        return deps
 
