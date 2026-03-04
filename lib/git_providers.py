@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Iterable, List, Optional
 
 from git import Repo  # type: ignore[import-untyped]
-from github import Github, Organization, Repository  # type: ignore[import-untyped]
+from github import Github, Organization, Repository, Auth  # type: ignore[import-untyped]
 
 
 @dataclass
@@ -25,10 +25,11 @@ class GitHubProvider:
     """
 
     def __init__(self, token: str, base_url: Optional[str] = None) -> None:
+        auth = Auth.Token(token)
         if base_url:
-            self._gh = Github(login_or_token=token, base_url=base_url.rstrip("/"))
+            self._gh = Github(auth=auth, base_url=base_url.rstrip("/"))
         else:
-            self._gh = Github(login_or_token=token)
+            self._gh = Github(auth=auth)
 
     def get_organization_repos(self, org_name: str) -> List[RepoRef]:
         org: Organization.Organization = self._gh.get_organization(org_name)  # type: ignore[attr-defined]
