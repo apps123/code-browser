@@ -111,6 +111,10 @@
 ### Implementation for User Story 3
 
 - [ ] T029 [P] [US3] Implement repository analysis pipeline to collect contributors, tech stack, tests, coverage, CI/CD badges, issues, license, and commit recency in `lib/repo_analyzer.py`
+- [ ] T048 [US3] Implement software dependency detection for Python repositories by parsing common manifests (`requirements.txt`, `pyproject.toml`, `setup.cfg`, `Pipfile`) in `lib/repo_analyzer.py` and surfacing results to the Dependencies section
+- [ ] T049 [US3] Implement software dependency detection for Java repositories by parsing build descriptors (`pom.xml`, `build.gradle`, `build.gradle.kts`) in `lib/repo_analyzer.py` and surfacing results to the Dependencies section
+- [ ] T050 [US3] Implement software dependency detection for Go repositories by parsing `go.mod` (and related Go module metadata) in `lib/repo_analyzer.py` and surfacing results to the Dependencies section
+- [ ] T051 [US3] Extend README renderer to list detected software dependencies (name and version range where available) and clearly separate them from system dependencies in `lib/readme_renderer.py`
 - [ ] T030 [P] [US3] Integrate security scanner orchestration results (SAST, SCA, secrets, DAST, IaC) into a unified “total number of identified security issues” count in `lib/security_scanner.py`
 - [ ] T031 [P] [US3] Implement AI-powered summarization layer to generate narrative sections (Summary, Features, Code Documentation, etc.) via `lib/ai_summarizer.py`
 - [ ] T032 [US3] Implement architecture, code organization, and code-flow Mermaid diagram generation helpers in `lib/diagram_generator.py`
