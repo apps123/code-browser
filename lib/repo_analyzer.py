@@ -28,6 +28,7 @@ class RepoAnalysis:
     # Detected dependencies (e.g., "package==1.2.3" or "group:artifact:version")
     software_dependencies: List[str] = field(default_factory=list)
     # High-level system/runtime/infra requirements inferred from the repo
+    # Placeholder for future detection of databases, brokers, external systems, etc.
     system_dependencies: List[str] = field(default_factory=list)
 
 
@@ -196,7 +197,6 @@ class RepoAnalyzer:
         return "Custom / Unknown"
 
     # ---- Dependency inference helpers ----
-
     def _infer_software_dependencies(self, local_path: Path) -> List[str]:
         """
         Aggregate software dependencies detected from language-specific manifests.
@@ -206,6 +206,120 @@ class RepoAnalyzer:
         deps.update(self._infer_java_dependencies(local_path))
         deps.update(self._infer_go_dependencies(local_path))
         return sorted(deps)
+
+    def _infer_system_dependencies(self, local_path: Path, software_dependencies: List[str]) -> List[str]:
+        """
+        Infer high-level system requirements and external infrastructure from
+        project structure and declared dependencies.
+
+        This intentionally provides approximate, human-readable guidance rather
+        than a complete environment specification.
+        """
+        items: List[str] = []
+
+        # Baseline environment assumptions – most modern repos can run on these.
+        items.append("Operating systems: Linux, macOS, Windows (x86_64)")
+        items.append("CPU: 2+ cores recommended for comfortable usage")
+        items.append("Memory: 2+ GB RAM recommended (more for large repositories)")
+        items.append("Disk: At least 1 GB free for repository clone and tooling")
+
+        # Network requirements based on common Git hosting and HTTP usage.
+        items.append(
+            "Network: Outbound HTTPS access to Git hosting (e.g., GitHub or enterprise Git) and any remote APIs used by the code"
+        )
+
+        # Detect databases, caches, messaging systems, etc. from dependencies.
+        infra: List[str] = []
+        lower_deps = [d.lower() for d in software_dependencies]
+
+        def _add_unique(label: str) -> None:
+            if label not in infra:
+                infra.append(label)
+
+        # Python DB drivers / ORMs
+        for dep in lower_deps:
+            if "psycopg2" in dep or "asyncpg" in dep or "pg8000" in dep:
+                _add_unique("Database: PostgreSQL")
+            if "mysql" in dep and "mysqlclient" in dep or "pymysql" in dep:
+                _add_unique("Database: MySQL / MariaDB")
+            if "sqlserver" in dep or "pyodbc" in dep:
+                _add_unique("Database: SQL Server (via ODBC)")
+            if "pymongo" in dep or "mongoengine" in dep:
+                _add_unique("Database: MongoDB")
+            if "redis" in dep:
+                _add_unique("Cache / Key-Value store: Redis")
+            if "kafka" in dep:
+                _add_unique("Messaging: Apache Kafka")
+            if "rabbitmq" in dep or "pika" in dep:
+                _add_unique("Messaging: RabbitMQ")
+            if "celery" in dep:
+                _add_unique("Background jobs: Celery (requires broker such as Redis or RabbitMQ)")
+            if "boto3" in dep:
+                _add_unique("Cloud: AWS services (via boto3)")
+
+        # Java ecosystem hints
+        for dep in lower_deps:
+            if "spring-boot-starter-data-jpa" in dep:
+                _add_unique("Database: Relational DB (via JPA/Hibernate)")
+            if "spring-boot-starter-data-mongodb" in dep:
+                _add_unique("Database: MongoDB")
+            if "spring-boot-starter-data-redis" in dep:
+                _add_unique("Cache / Key-Value store: Redis")
+            if "spring-kafka" in dep:
+                _add_unique("Messaging: Apache Kafka")
+            if "spring-boot-starter-amqp" in dep:
+                _add_unique("Messaging: AMQP (e.g., RabbitMQ)")
+
+        # Go ecosystem hints
+        for dep in lower_deps:
+            if "github.com/lib/pq" in dep:
+                _add_unique("Database: PostgreSQL")
+            if "go-sql-driver/mysql" in dep:
+                _add_unique("Database: MySQL / MariaDB")
+            if "mongo-go-driver" in dep or "go.mongodb.org/mongo-driver" in dep:
+                _add_unique("Database: MongoDB")
+            if "github.com/redis" in dep or "go-redis" in dep:
+                _add_unique("Cache / Key-Value store: Redis")
+            if "segmentio/kafka-go" in dep:
+                _add_unique("Messaging: Apache Kafka")
+
+        # Very light-weight config/manifest scanning for infra keywords.
+        config_dirs = ["config", "deploy", "k8s", ".github", ".config"]
+        config_exts = {".yml", ".yaml", ".json", ".tf"}
+        keywords = {
+            "postgres": "Database: PostgreSQL",
+            "mysql": "Database: MySQL / MariaDB",
+            "mariadb": "Database: MySQL / MariaDB",
+            "mongodb": "Database: MongoDB",
+            "redis": "Cache / Key-Value store: Redis",
+            "kafka": "Messaging: Apache Kafka",
+            "rabbitmq": "Messaging: RabbitMQ",
+            "sqs": "Messaging: AWS SQS",
+            "sns": "Messaging: AWS SNS",
+            "dynamodb": "Database: AWS DynamoDB",
+            "elasticsearch": "Search: Elasticsearch / OpenSearch",
+            "opensearch": "Search: OpenSearch",
+            "memcached": "Cache: Memcached",
+        }
+
+        try:
+            for path in local_path.rglob("*"):
+                if not path.is_file():
+                    continue
+                if path.suffix in config_exts or any(part in config_dirs for part in path.parts):
+                    try:
+                        text = path.read_text(encoding="utf-8", errors="ignore").lower()
+                    except Exception:
+                        continue
+                    for token, label in keywords.items():
+                        if token in text:
+                            _add_unique(label)
+        except Exception:
+            # Best-effort only; ignore scanning issues.
+            pass
+
+        items.extend(infra)
+        return items
 
     def _infer_python_dependencies(self, local_path: Path) -> List[str]:
         deps: List[str] = []
@@ -321,10 +435,7 @@ class RepoAnalyzer:
                     line = raw.strip()
                     if not line or line.startswith("//"):
                         continue
-                    if any(
-                        line.startswith(prefix)
-                        for prefix in ("implementation", "api", "compileOnly", "runtimeOnly")
-                    ):
+                    if any(line.startswith(prefix) for prefix in ("implementation", "api", "compileOnly", "runtimeOnly")):
                         # Look for "group:artifact:version" inside quotes
                         quote = '"' if '"' in line else "'"
                         if quote in line:
@@ -488,5 +599,6 @@ class RepoAnalyzer:
 
         items.extend(infra)
         return items
+
 
 

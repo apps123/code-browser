@@ -130,3 +130,4 @@ class SecurityScanner:
                 )
         return findings
 
+

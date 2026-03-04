@@ -110,13 +110,21 @@
 
 ### Implementation for User Story 3
 
-- [ ] T029 [P] [US3] Implement repository analysis pipeline to collect contributors, tech stack, tests, coverage, CI/CD badges, issues, license, and commit recency in `lib/repo_analyzer.py` (covers FR-006, FR-007, FR-008, FR-011–FR-014, contributes to SC-003–SC-005)
-- [ ] T030 [P] [US3] Integrate security scanner orchestration results (SAST, SCA, secrets, DAST, IaC) into a unified “total number of identified security issues” count in `lib/security_scanner.py` (covers FR-006, FR-020) ensuring that each configured tool category contributes to the aggregated metrics with clear labels for reporting
-- [ ] T031 [P] [US3] Implement AI-powered summarization layer to generate narrative sections (Summary, Features, Code Documentation, etc.) via `lib/ai_summarizer.py` (covers FR-005, FR-006, FR-009, FR-012–FR-014, supports SC-003)
-- [ ] T032 [US3] Implement architecture, code organization, and code-flow Mermaid diagram generation helpers in `lib/diagram_generator.py` (covers FR-009–FR-011)
-- [ ] T033 [US3] Implement README renderer that assembles all metrics, summaries, and diagrams into `code-browser/<repo-name>/README.md` in `lib/readme_renderer.py` (covers FR-004–FR-007, FR-009–FR-015, contributes to SC-003–SC-005)
-- [ ] T034 [US3] Ensure missing data (e.g., no issues, no tests) is represented as “Not available” rather than causing failures in `lib/readme_renderer.py` (supports FR-005–FR-007, FR-013–FR-014)
-- [ ] T035 [US3] Design and document behavior for large organizations and long-running scans (e.g., progress visibility, partial completion) in `specs/001-repo-analysis/quickstart.md` (supports FR-001, FR-017, SC-001)
+- [ ] T029 [P] [US3] Implement repository analysis pipeline to collect contributors, tech stack, tests, coverage, CI/CD badges, issues, license, and commit recency in `lib/repo_analyzer.py`
+- [ ] T048 [US3] Implement software dependency detection for Python repositories by parsing common manifests (`requirements.txt`, `pyproject.toml`, `setup.cfg`, `Pipfile`) in `lib/repo_analyzer.py` and surfacing results to the Dependencies section
+- [ ] T049 [US3] Implement software dependency detection for Java repositories by parsing build descriptors (`pom.xml`, `build.gradle`, `build.gradle.kts`) in `lib/repo_analyzer.py` and surfacing results to the Dependencies section
+- [ ] T050 [US3] Implement software dependency detection for Go repositories by parsing `go.mod` (and related Go module metadata) in `lib/repo_analyzer.py` and surfacing results to the Dependencies section
+- [ ] T051 [US3] Extend README renderer to list detected software dependencies (name and version range where available) and clearly separate them from system dependencies in `lib/readme_renderer.py`
+- [ ] T052 [US3] Clean up dependency parsing to ignore non-package metadata lines (e.g., descriptions, license fields, author blocks) and restrict Software Dependencies output to normalized package identifiers and versions only across all supported languages in `lib/repo_analyzer.py`
+ - [ ] T053 [US3] Implement system dependency inference to describe minimum runtime environment (OS support, CPU, memory, disk, and network access requirements) for analyzed repositories, and surface these as normalized entries in `system_dependencies` in `lib/repo_analyzer.py`
+ - [ ] T054 [US3] Implement detection of external infrastructure (databases, key-value stores, caches, messaging systems, and similar stacks) from configuration files and dependencies in `lib/repo_analyzer.py`, and expose them as structured items in `system_dependencies` for display in the README
+- [ ] T030 [P] [US3] Integrate security scanner orchestration results (SAST, SCA, secrets, DAST, IaC) into a unified “total number of identified security issues” count in `lib/security_scanner.py`
+- [ ] T031 [P] [US3] Implement AI-powered summarization layer to generate narrative sections (Summary, Features, Code Documentation, etc.) via `lib/ai_summarizer.py`
+- [ ] T032 [US3] Implement architecture, code organization, and code-flow Mermaid diagram generation helpers in `lib/diagram_generator.py`
+- [ ] T033 [US3] Implement README renderer that assembles all metrics, summaries, and diagrams into `code-browser/<repo-name>/README.md` in `lib/readme_renderer.py`
+- [ ] T034 [US3] Ensure missing data (e.g., no issues, no tests) is represented as “Not available” rather than causing failures in `lib/readme_renderer.py`
+- [ ] T035 [US3] Design and document behavior for large organizations and long-running scans (e.g., progress visibility, partial completion) in `specs/001-repo-analysis/quickstart.md`
+- [ ] T047 [US3] Implement license detection from repository root license files and surface it in README summaries in `lib/repo_analyzer.py`, `lib/models.py`, and `lib/readme_renderer.py`
 
 **Checkpoint**: Generated READMEs provide a comprehensive, human-readable summary of repository health and architecture.
 
